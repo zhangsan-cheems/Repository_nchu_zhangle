@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .downLoad{}
+        .crud{}
+    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>欢迎进入南航邮箱系统</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">南航邮箱系统</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item"><a id="serchFriend">搜索用户</a></li>
+<!--            <li class="layui-nav-item"><a href="">更多功能</a></li>-->
+<!--            <li class="layui-nav-item"><a href="">更多功能</a></li>-->
+            <li class="layui-nav-item">
+<!--                <a href="javascript:;">其它系统</a>-->
+<!--                <dl class="layui-nav-child">-->
+<!--                    <dd><a href="">功能一</a></dd>-->
+<!--                    <dd><a href="">功能二</a></dd>-->
+<!--                    <dd><a href="">功能三</a></dd>-->
+<!--                </dl>-->
+            </li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="" id="custName">
+                    <!-- 页面加载完毕后先用ajax获取session信息 -->
+                    <!-- 动态获取用户昵称 -->
+                    <script>
+                        //获取session信息
+                        // var userInfo;
+                        // $(document).ready(function () {
+                            // $.ajax({url:"/getSession",success:function (result) {
+                            //     var a=JSON.stringify(result);
+                            //     userInfo=JSON.parse(a);
+                            //     }})
+
+                        var phonenum;
+                        $(document).ready(function () {
+                            $.ajax({url:"/getPhoneNum",success:function (result) {
+                                    phonenum=result;
+                                    $.ajax({url:"/getCustName",data:{"phoneNum":phonenum},success:function (result) {
+                                            $("#custName").text(result);
+                                        }})
+                                }})
+
+                            //再检验一下该用户是否是管理员，若是管理员，则页面产生变化
+                            $.ajax({url:"/checkManager",success:function (result) {
+                                        if(result==="yes"){
+                                            alert("你好，管理员！");
+
+                                            //如果是管理员，左侧菜单栏会新增一些功能
+                                            var newDiv7="                <li class=\"layui-nav-item\">\n" +
+                                                "                    <a class='crud'>操作用户</a>\n" +
+                                                "                </li>";
+                                            $("#ulOfMain").append(newDiv7);
+
+                                            $(".crud").click(function () {
+                                                $("#content").empty();
+                                                var newDiv8="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+                                                    "  <legend>删除用户</legend>\n" +
+                                                    "</fieldset>" +
+                                                    "<form class=\"layui-form\" action=\"\" lay-filter=\"example\">\n" +
+                                                    "  <div class=\"layui-form-item\">\n" +
+                                                    "    <label class=\"layui-form-label\">用户ID</label>\n" +
+                                                    "    <div class=\"layui-input-block\">\n" +
+                                                    "      <input id=\"delectUserId\" type=\"text\" name=\"username\" lay-verify=\"title\" autocomplete=\"off\" placeholder=\"请输入要删除的用户的ID\" class=\"layui-input\">\n" +
+                                                    "    </div>\n" +
+                                                    "  </div>\n" +
+                                                    "  <div class=\"layui-form-item\">\n" +
+                                                    "    <div class=\"layui-input-block\">\n" +
+                                                    "      <button id=\"submitForDelete\" type=\"button\" class=\"layui-btn\" lay-submit=\"\" lay-filter=\"demo1\">立即删除</button>\n" +
+                                                    "    </div>\n" +
+                                                    "  </div>\n" +
+                                                    "</form>";
+                                                $("#content").append(newDiv8);
+
+                                                $("#submitForDelete").click(function () {
+                                                    var deleteUserId=document.getElementById("delectUserId").value;
+
+                                                    $.ajax({url:"/deleteUser",data:{"id":deleteUserId},success:function (result) {
+                                                                if(result==="success"){
+                                                                    alert("删除成功！");
+                                                                    $("#content").empty();
+                                                                }
+                                                        }})
+                                                })
+                                            })
+                                        }
+                                        if(result==="no"){
+                                            return;
+                                        }
+                                }})
+                        })
+                    </script>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a id="changePwd">修改密码</a></dd>
+<!--                    <dd><a href="">安全设置</a></dd>-->
+                </dl>
+            </li>
+            <li class="layui-nav-item"><a id="quit">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test" id="ulOfMain">
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a class="" href="javascript:;">个人邮箱</a>
+                    <dl class="layui-nav-child">
+                        <dd><a id="sendEmail">写信</a></dd>
+                        <dd><a id="sendFile">发文件</a></dd>
+                        <dd><a id="receiveEmail">收信箱</a></dd>
+<!--                        <dd><a id="friend">好友列表</a></dd>-->
+                    </dl>
+                </li>
+<!--                <li class="layui-nav-item">-->
+<!--                    <a href="javascript:;">更多功能</a>-->
+<!--                    <dl class="layui-nav-child">-->
+<!--                        <dd><a href="javascript:;">列表一</a></dd>-->
+<!--                        <dd><a href="javascript:;">列表二</a></dd>-->
+<!--                        <dd><a href="">超链接</a></dd>-->
+<!--                    </dl>-->
+<!--                </li>-->
+<!--                <li class="layui-nav-item"><a href="">更多功能</a></li>-->
+<!--                <li class="layui-nav-item"><a href="">更多功能</a></li>-->
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body" id="content">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;"></div>
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+<script src="layui/layui.js"></script>
+<script>
+    $(".crud").click(function () {
+        $("#content").empty();
+        var newDiv8="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+            "  <legend>删除用户</legend>\n" +
+            "</fieldset>" +
+            "<form class=\"layui-form\" action=\"\" lay-filter=\"example\">\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">用户ID</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"delectUserId\" type=\"text\" name=\"username\" lay-verify=\"title\" autocomplete=\"off\" placeholder=\"请输入要删除的用户的ID\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <button id=\"submitForDelet\" type=\"button\" class=\"layui-btn\" lay-submit=\"\" lay-filter=\"demo1\">立即删除</button>\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "</form>";
+        $("#content").append(newDiv8);
+
+        $("#submitForDelet").click(function () {
+
+        })
+    })
+</script>
+<script>
+    $("#changePwd").click(function () {
+        $("#content").empty();
+        var newDiv6="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+            "  <legend>修改密码</legend>\n" +
+            "</fieldset>" +
+            "<form class=\"layui-form\" action=\"\" lay-filter=\"example\">\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">新密码</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"newPwd\" type=\"text\" name=\"username\" lay-verify=\"title\" autocomplete=\"off\" placeholder=\"请输入新密码\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">确认密码</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"newPwd1\" type=\"text\" name=\"password\" placeholder=\"请再次输入密码\" autocomplete=\"off\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  \n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <button id=\"submitForChangePwd\" type=\"button\" class=\"layui-btn\" lay-submit=\"\" lay-filter=\"demo1\">立即提交</button>\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "</form>";
+        $("#content").append(newDiv6);
+
+        $("#submitForChangePwd").click(function () {
+                var newPwd=document.getElementById("newPwd").value;
+                var newPwd1=document.getElementById("newPwd1").value;
+
+                if(newPwd!=newPwd1){
+                    alert("前后输入不一致，请重新输入！");
+                    return;
+                }
+
+                $.ajax({url:"/changePwd",data:{"password":newPwd},success:function (result) {
+                            if(result==="success"){
+                                alert("修改成功！");
+                                $("#content").empty();
+                            }
+                            if(result==="erro03"){
+                                alert("密码必须为6到12位字符！");
+                            }
+                    }})
+        })
+
+    })
+</script>
+<script>
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    $("#sendEmail").click(function () {
+        $("#content").empty();
+        var newDiv= "<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+            "  <legend>写信</legend>\n" +
+            "</fieldset>" +
+            "<form class=\"layui-form\" action=\"\" lay-filter=\"example\">\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">收件人ID</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"emailReceive\" type=\"text\" name=\"username\" lay-verify=\"title\" autocomplete=\"off\" placeholder=\"请输入收件人ID\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">标题</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"emailTitle\" type=\"text\" name=\"password\" placeholder=\"请输入标题\" autocomplete=\"off\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  \n" +
+            "  <div class=\"layui-form-item layui-form-text\">\n" +
+            "    <label class=\"layui-form-label\">文本域</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <textarea id=\"emailText\" placeholder=\"请输入内容\" class=\"layui-textarea\" name=\"desc\"></textarea>\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            " \n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <button id=\"submitOfSend\" type=\"button\" class=\"layui-btn\" lay-submit=\"\" lay-filter=\"demo1\">立即提交</button>\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "</form>";
+
+        $("#content").append(newDiv);
+
+        $("#submitOfSend").click(function () {
+            var emailReceive=document.getElementById("emailReceive").value;
+            var emailTitle=document.getElementById("emailTitle").value;
+            var emailText=document.getElementById("emailText").value;
+
+            $.ajax({url:"/handleSendForText",data:{"receiveId":emailReceive,"emailTitle":emailTitle,"emailText":emailText},success:function (result) {
+                    if(result==="success"){
+                        alert("发送成功！")
+                        $("#content").empty();
+                    }
+                    if(result==="erro04"){
+                        alert("收件人ID错误！")
+                    }
+                }})
+        })
+
+    })
+</script>
+<script>
+    $("#receiveEmail").click(function () {
+        $("#content").empty();
+        $.ajax({url:"/getReceiveEmailText",success:function (result) {
+            var receiveInfo=result;//receiveInfo是String类型
+            var jsonInfo=JSON.parse(receiveInfo);
+            //动态生成表格
+            var newDiv11="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+                    "  <legend>文本收件箱</legend>\n" +
+                    "</fieldset>"+
+                "<div class=\"layui-form\">\n"+
+                "  <table class=\"layui-table\">\n" +
+                "    <colgroup>\n" +
+                "      <col width=\"150\">\n" +
+                "      <col width=\"150\">\n" +
+                "      <col width=\"200\">\n" +
+                "      <col>\n" +
+                "    </colgroup>\n" +
+                "    <thead>\n" +
+                "      <tr>\n" +
+                "        <th>标题</th>\n" +
+                "        <th>发件人ID</th>\n" +
+                "        <th>发送时间</th>\n" +
+                "        <th>信件内容</th>\n" +
+                "      </tr> \n" +
+                "    </thead>\n" + build1()+
+                "  </table>\n" +
+                "</div>";
+
+                $("#content").append(newDiv11);
+
+
+                function build1() {
+                    for(var i=0;i<jsonInfo.length;i++){
+                        var body=body+"    <tbody>\n" +
+                            "      <tr>\n" +
+                            "        <td>"+jsonInfo[i].email_title+"</td>\n" +
+                            "        <td>"+jsonInfo[i].send_id+"</td>\n" +
+                            "        <td>"+jsonInfo[i].updatetime+"</td>\n" +
+                            "        <td>"+jsonInfo[i].email_text+"</td>\n" +
+                            "      </tr>\n" +
+                            "    </tbody>\n"
+                    }
+                    return body;
+                }
+        }})
+
+        $.ajax({url:"/getReceiveEmailFile",success:function (result) {
+                var receiveInfo=result;//receiveInfo是String类型
+                var jsonInfo=JSON.parse(receiveInfo);
+                //动态生成表格
+                var newDiv12="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+                    "  <legend>文件收件箱</legend>\n" +
+                    "</fieldset>"+
+                    "<div class=\"layui-form\">\n"+
+                    "  <table class=\"layui-table\">\n" +
+                    "    <colgroup>\n" +
+                    "      <col width=\"150\">\n" +
+                    "      <col width=\"150\">\n" +
+                    "      <col width=\"200\">\n" +
+                    "      <col>\n" +
+                    "    </colgroup>\n" +
+                    "    <thead>\n" +
+                    "      <tr>\n" +
+                    "        <th>标题</th>\n" +
+                    "        <th>发件人ID</th>\n" +
+                    "        <th>发送时间</th>\n" +
+                    "        <th>信件内容</th>\n" +
+                    "      </tr> \n" +
+                    "    </thead>\n" + build2()+
+                    "  </table>\n" +
+                    "</div>";
+
+                $("#content").append(newDiv12);
+
+
+                function build2() {
+                    for(var i=0;i<jsonInfo.length;i++){
+                        var body=body+"    <tbody>\n" +
+                            "      <tr>\n" +
+                            "        <td>"+jsonInfo[i].email_title+"</td>\n" +
+                            "        <td>"+jsonInfo[i].send_id+"</td>\n" +
+                            "        <td>"+jsonInfo[i].updatetime+"</td>\n" +
+                            "        <td>"+"<a class='downLoad' onclick='downLoad()' id='"+jsonInfo[i].email_url+"'>下载附件</a> "+"</td>\n" +
+                            "      </tr>\n" +
+                            "    </tbody>\n"
+                    }
+                    return body;
+                }
+
+                //用类选择器来获取获取超链接
+                $(".downLoad").click(function () {
+                        var filePath=$(this).attr("id");  //获取其id属性
+                    $.ajax({url:"/downLoad",data:{"filePath":filePath},success:function (result) {
+                                    if(result==="ok"){
+                                        alert("下载成功！");
+                                    }
+                        }})
+                })
+
+            }})
+    })
+</script>
+<script>
+    $("#friend").click(function () {
+        $("#content").empty();
+        var newDiv2="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+            "  <legend>好友列表</legend>\n" +
+            "</fieldset>";
+        $("#content").append(newDiv2);
+    })
+</script>
+<script>
+    $("#serchFriend").click(function () {
+        $("#content").empty();
+        var newDiv3="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+            "  <legend>根据昵称搜索用户ID</legend>\n" +
+            "</fieldset>"+
+        " <div class=\"layui-form-item\">\n" +
+            "    <div class=\"layui-inline\">\n" +
+            "      <label class=\"layui-form-label\">用户昵称</label>\n" +
+            "      <div class=\"layui-input-inline\">\n" +
+            "        <input type=\"text\" name=\"custname\" lay-verify=\"required|phone\" autocomplete=\"off\" class=\"layui-input\" id=\"custname\">\n" +
+            "      </div>\n" +
+            "    </div>\n" +
+            "    \n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <button type=\"button\" class=\"layui-btn\" lay-submit=\"\" lay-filter=\"demo1\" id=\"serch\">搜索</button>\n" +
+            "    </div>\n" +
+            "  </div>";
+        $("#content").append(newDiv3);
+
+        $("#serch").click(function () {
+            var custNameForSerchId=document.getElementById("custname").value;
+
+            $.ajax({url:"/getIdByCustName",data:{"custName":custNameForSerchId},success:function (result) {
+                if(result==="erro05"){
+                    alert("用户不存在！");
+                    return;
+                }
+
+                var userlist=JSON.parse(result);
+                    $("#content").empty();
+                            //动态生成表格
+                            var newDiv1="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 50px;\">\n" +
+                                "  <legend>用户列表</legend>\n" +
+                                "</fieldset>"+
+                                "<div class=\"layui-form\">\n"+
+                                "  <table class=\"layui-table\">\n" +
+                                "    <colgroup>\n" +
+                                "      <col width=\"150\">\n" +
+                                "      <col width=\"150\">\n" +
+                                "      <col width=\"200\">\n" +
+                                "      <col>\n" +
+                                "    </colgroup>\n" +
+                                "    <thead>\n" +
+                                "      <tr>\n" +
+                                "        <th>用户ID</th>\n" +
+                                "        <th>用户昵称</th>\n" +
+                                "      </tr> \n" +
+                                "    </thead>\n" + build()+
+                                "  </table>\n" +
+                                "</div>";
+
+                            $("#content").append(newDiv1);
+
+                            function build() {
+                                for(var i=0;i<userlist.length;i++){
+                                    var body=body+"    <tbody>\n" +
+                                        "      <tr>\n" +
+                                        "        <td>"+userlist[i].id+"</td>\n" +
+                                        "        <td>"+userlist[i].custname+"</td>\n" +
+                                        "      </tr>\n" +
+                                        "    </tbody>\n"
+                                }
+                                return body;
+                            }
+
+                }})
+        })
+    })
+</script>
+<script>
+    $("#sendFile").click(function () {
+        $("#content").empty();
+        var newDiv5="<fieldset class=\"layui-elem-field layui-field-title\" style=\"margin-top: 30px;\">\n" +
+            "  <legend>发送文件</legend>\n" +
+            "</fieldset>\n" +
+            "<form class=\"layui-form\" method='post' action=\"/sendFile\" lay-filter=\"example\" enctype=\"multipart/form-data\">\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">收件人ID</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"emailReceive1\" type=\"text\" name=\"receiveId\" lay-verify=\"title\" autocomplete=\"off\" placeholder=\"请输入收件人ID\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  <div class=\"layui-form-item\">\n" +
+            "    <label class=\"layui-form-label\">标题</label>\n" +
+            "    <div class=\"layui-input-block\">\n" +
+            "      <input id=\"emailTitle1\" type=\"text\" name=\"emailTitle\" placeholder=\"请输入标题\" autocomplete=\"off\" class=\"layui-input\">\n" +
+            "    </div>\n" +
+            "  </div>\n" +
+            "  \n" +
+                //这里的name的值要和后端的MultipartFile的变量名称相同才行
+            "  <input type=\"file\" class=\"layui-btn layui-btn-normal\" id=\"test1\" name='upload'></input>\n" +
+            "  <input type=\"submit\" class=\"layui-btn\" id=\"test2\"></input>\n" +
+            "</div>"+
+            "</form>";
+        $("#content").append(newDiv5);
+
+    })
+</script>
+<script>
+    $("#quit").click(function () {
+        layui.use('layer', function() { //独立版的layer无需执行这一句
+            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+            layer.open({
+                type: 1
+                ,
+                title: false //不显示标题栏
+                ,
+                closeBtn: false
+                ,
+                area: '300px;'
+                ,
+                shade: 0.8
+                ,
+                id: 'LAY_layuipro' //设定一个id，防止重复弹出
+                ,
+                btn: ['确认退出', '取消']
+                ,
+                btnAlign: 'c'
+                ,
+                moveType: 1 //拖拽模式，0或者1
+                ,
+                content: '<div style="padding: 50px; line-height: 22px; background-color: #393D49; color: #fff; font-weight: 300;">确认退出吗？<br>退出的话会清空所有账户信息并返回登陆页面</div>'
+                ,
+                success: function (layero) {  //点退出按钮就会触发这个函数
+                    var btn = layero.find('.layui-layer-btn');
+                    btn.find('.layui-layer-btn0').attr({  //这里btn0的意思是第一个按钮，也就是“确认退出”
+                        href: 'http://localhost:8080/quit.html',  //超链接跳转
+                        // window:location.href="http://localhost:8080/index.html", //直接重定向也行，不过要改变下形式
+                        target: '_blank'
+                    });
+                }
+            });
+        })
+    })
+</script>
+</body>
+</html>
